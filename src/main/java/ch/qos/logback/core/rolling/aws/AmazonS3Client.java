@@ -47,10 +47,10 @@ public class AmazonS3Client implements RollingPolicyShutdownListener {
         this.prefixTimestamp = prefixTimestamp;
         this.prefixIdentifier = prefixIdentifier;
 
-        executor = Executors.newFixedThreadPool(1);
-        amazonS3 = null;
+        this.executor = Executors.newFixedThreadPool(1);
+        this.amazonS3 = null;
 
-        identifier = prefixIdentifier ? IdentifierUtil.getIdentifier() : null;
+        this.identifier = prefixIdentifier ? IdentifierUtil.getIdentifier() : null;
     }
 
     public void uploadFileToS3Async(final String filename, final Date date) {
@@ -58,15 +58,15 @@ public class AmazonS3Client implements RollingPolicyShutdownListener {
     }
 
     public void uploadFileToS3Async(final String filename, final Date date, final boolean overrideTimestampSetting) {
-        if (amazonS3 == null) {
-            AWSCredentials credenciais = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
-            amazonS3 = AmazonS3ClientBuilder.standard()
+        if (this.amazonS3 == null) {
+            AWSCredentials credenciais = new BasicAWSCredentials(getAwsAccessKey(), getAwsSecretKey());
+            this.amazonS3 = AmazonS3ClientBuilder.standard()
                     .withCredentials(new AWSStaticCredentialsProvider(credenciais))
                     .withRegion(Regions.US_EAST_1)
                     .build();
 
-            if (!amazonS3.doesBucketExistV2(s3BucketName)) {
-                amazonS3.createBucket(new CreateBucketRequest(s3BucketName));
+            if (!this.amazonS3.doesBucketExistV2(getS3BucketName())) {
+                this.amazonS3.createBucket(new CreateBucketRequest(getS3BucketName()));
             }
         }
 
@@ -84,19 +84,19 @@ public class AmazonS3Client implements RollingPolicyShutdownListener {
             s3ObjectName.append(CustomData.extraS3Folder.get()).append("/");
         }
 
-        if (prefixTimestamp || overrideTimestampSetting) {
+        if (isPrefixTimestamp() || overrideTimestampSetting) {
             s3ObjectName.append(new SimpleDateFormat("yyyyMMddHHmmss").format(date)).append("_");
         }
 
-        if (prefixIdentifier) {
-            s3ObjectName.append(identifier).append("_");
+        if (isPrefixIdentifier()) {
+            s3ObjectName.append(this.identifier).append("_");
         }
 
         s3ObjectName.append(file.getName());
 
         Runnable uploader = () -> {
             try {
-                amazonS3.putObject(
+                this.amazonS3.putObject(
                         new PutObjectRequest(getS3BucketName(), s3ObjectName.toString(), file)
                                 .withCannedAcl(CannedAccessControlList.BucketOwnerFullControl));
             } catch (Exception ex) {
@@ -104,24 +104,22 @@ public class AmazonS3Client implements RollingPolicyShutdownListener {
             }
         };
 
-        executor.execute(uploader);
+        this.executor.execute(uploader);
     }
 
     @Override
     public void doShutdown() {
         try {
-            executor.shutdown();
-            executor.awaitTermination(10, TimeUnit.MINUTES);
+            this.executor.shutdown();
+            this.executor.awaitTermination(10, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
-            executor.shutdownNow();
+            this.executor.shutdownNow();
         }
     }
 
     private String format(String s, Date date) {
-
-        Pattern pattern = Pattern.compile("%d\\{(.*?)\\}");
+        Pattern pattern = Pattern.compile("%d\\{(.*?)}");
         Matcher matcher = pattern.matcher(s);
-
         while (matcher.find()) {
             String match = matcher.group(1);
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(match);

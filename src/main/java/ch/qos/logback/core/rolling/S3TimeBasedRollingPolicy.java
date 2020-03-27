@@ -28,26 +28,32 @@ public class S3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<E> imple
 
     public S3TimeBasedRollingPolicy() {
         super();
-        rolloverOnExit = false;
-        prefixTimestamp = false;
-        prefixIdentifier = false;
-        shutdownHookType = ShutdownHookType.NONE;
-        executor = Executors.newFixedThreadPool(1);
 
-        lastPeriod = new Date();
+        setAwsAccessKey(null);
+        setAwsSecretKey(null);
+        setS3FolderName(null);
+        setS3BucketName(null);
+
+        setRolloverOnExit(false);
+        setPrefixTimestamp(false);
+        setPrefixIdentifier(false);
+        setShutdownHookType(ShutdownHookType.NONE);
+
+        this.lastPeriod = new Date();
+        this.executor = Executors.newFixedThreadPool(1);
     }
 
     @Override
     public void start() {
         super.start();
 
-        lastPeriod = getLastPeriod();
+        this.lastPeriod = getLastPeriod();
 
-        s3Client = new AmazonS3Client(getAwsAccessKey(), getAwsSecretKey(), getS3BucketName(),
+        this.s3Client = new AmazonS3Client(getAwsAccessKey(), getAwsSecretKey(), getS3BucketName(),
                 getS3FolderName(), isPrefixTimestamp(), isPrefixIdentifier());
 
         if (isPrefixIdentifier()) {
-            addInfo("Using identifier prefix \"" + s3Client.getIdentifier() + "\"");
+            addInfo("Using identifier prefix \"" + this.s3Client.getIdentifier() + "\"");
         }
 
         ShutdownHookUtil.registerShutdownHook(this, getShutdownHookType());
@@ -61,9 +67,9 @@ public class S3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<E> imple
 
             super.rollover();
 
-            executor.execute(new UploadQueuer(elapsedPeriodsFileName, lastPeriod));
+            this.executor.execute(new UploadQueuer(elapsedPeriodsFileName, this.lastPeriod));
         } else {
-            s3Client.uploadFileToS3Async(getActiveFileName(), lastPeriod, true);
+            this.s3Client.uploadFileToS3Async(getActiveFileName(), this.lastPeriod, true);
         }
     }
 
@@ -83,17 +89,17 @@ public class S3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<E> imple
         if (isRolloverOnExit()) {
             rollover();
         } else {
-            s3Client.uploadFileToS3Async(getActiveFileName(), lastPeriod, true);
+            this.s3Client.uploadFileToS3Async(getActiveFileName(), this.lastPeriod, true);
         }
 
         try {
-            executor.shutdown();
-            executor.awaitTermination(10, TimeUnit.MINUTES);
+            this.executor.shutdown();
+            this.executor.awaitTermination(10, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
-            executor.shutdownNow();
+            this.executor.shutdownNow();
         }
 
-        s3Client.doShutdown();
+        this.s3Client.doShutdown();
     }
 
     private void waitForAsynchronousJobToStop(Future<?> aFuture, String jobDescription) {
@@ -106,7 +112,7 @@ public class S3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<E> imple
                 addError("Unexpected exception while waiting for " + jobDescription + " job to finish", e);
             }
         }
-        lastPeriod = getLastPeriod();
+        this.lastPeriod = getLastPeriod();
     }
 
     private String getFileNameSuffix() {

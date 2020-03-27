@@ -22,21 +22,27 @@ public class S3FixedWindowRollingPolicy extends FixedWindowRollingPolicy impleme
 
     public S3FixedWindowRollingPolicy() {
         super();
-        rolloverOnExit = false;
-        prefixTimestamp = false;
-        prefixIdentifier = false;
-        shutdownHookType = ShutdownHookType.NONE;
+
+        setAwsAccessKey(null);
+        setAwsSecretKey(null);
+        setS3FolderName(null);
+        setS3BucketName(null);
+
+        setRolloverOnExit(false);
+        setPrefixTimestamp(false);
+        setPrefixIdentifier(false);
+        setShutdownHookType(ShutdownHookType.NONE);
     }
 
     @Override
     public void start() {
         super.start();
 
-        s3Client = new AmazonS3Client(getAwsAccessKey(), getAwsSecretKey(), getS3BucketName(),
+        this.s3Client = new AmazonS3Client(getAwsAccessKey(), getAwsSecretKey(), getS3BucketName(),
                 getS3FolderName(), isPrefixTimestamp(), isPrefixIdentifier());
 
         if (isPrefixIdentifier()) {
-            addInfo("Using identifier prefix \"" + s3Client.getIdentifier() + "\"");
+            addInfo("Using identifier prefix \"" + this.s3Client.getIdentifier() + "\"");
         }
 
         ShutdownHookUtil.registerShutdownHook(this, getShutdownHookType());
@@ -46,7 +52,7 @@ public class S3FixedWindowRollingPolicy extends FixedWindowRollingPolicy impleme
     public void rollover() throws RolloverFailure {
         super.rollover();
 
-        s3Client.uploadFileToS3Async(fileNamePattern.convertInt(getMinIndex()), new Date());
+        this.s3Client.uploadFileToS3Async(fileNamePattern.convertInt(getMinIndex()), new Date());
     }
 
     @Override
@@ -54,10 +60,10 @@ public class S3FixedWindowRollingPolicy extends FixedWindowRollingPolicy impleme
         if (isRolloverOnExit()) {
             rollover();
         } else {
-            s3Client.uploadFileToS3Async(getActiveFileName(), new Date(), true);
+            this.s3Client.uploadFileToS3Async(getActiveFileName(), new Date(), true);
         }
 
-        s3Client.doShutdown();
+        this.s3Client.doShutdown();
     }
 
     public String getAwsAccessKey() {

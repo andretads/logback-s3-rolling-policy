@@ -1,36 +1,41 @@
 package ch.qos.logback.core.rolling.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 public class IdentifierUtil {
 
-    private static final Logger logger = Logger.getLogger(IdentifierUtil.class.getSimpleName());
+    private static final Logger logger = LoggerFactory.getLogger(IdentifierUtil.class);
+    private static String identifier;
 
     public static String getIdentifier() {
-        String identifier = getContentOfWebpage("http://169.254.169.254/latest/meta-data/instance-id");
-        if (identifier != null) {
-            return identifier;
+        if (identifier == null) {
+            identifier = getContentOfWebpage("http://169.254.169.254/latest/meta-data/instance-id");
         }
 
-
-        identifier = getHostname();
-        if (identifier != null) {
-            return identifier;
+        if (identifier == null) {
+            identifier = getHostname();
         }
 
-        return UUID.randomUUID().toString();
+        if (identifier == null) {
+            identifier = UUID.randomUUID().toString();
+        }
+
+        return identifier;
     }
 
     public static String getContentOfWebpage(String location) {
         try {
             URL url = new URL(location);
             URLConnection con = url.openConnection();
+            con.setConnectTimeout(500);
             InputStream in = con.getInputStream();
             String encoding = con.getContentEncoding();
             encoding = encoding == null ? "UTF-8" : encoding;
@@ -46,7 +51,7 @@ public class IdentifierUtil {
                 return body.trim();
             }
         } catch (Exception e) {
-            logger.fine(e.getMessage());
+            logger.error(e.getMessage());
         }
         return null;
     }
@@ -62,7 +67,7 @@ public class IdentifierUtil {
                 return hostname;
             }
         } catch (Exception e) {
-            logger.fine(e.getMessage());
+            logger.error(e.getMessage());
         }
         return null;
     }
