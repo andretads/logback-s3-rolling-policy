@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>br.com.damsete</groupId>
     <artifactId>logback-s3-rolling-policy</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,7 +18,7 @@
         <findbugs.dir>${check.dir}/findbugs</findbugs.dir>
 
         <pmd.ruleset>${pmd.dir}/pmd-ruleset.xml</pmd.ruleset>
-        <pmd.excludeFromFailureFile/>
+        <pmd.excludeFromFailureFile />
 
         <findbugs.excludeFilterFile>${findbugs.dir}/findbugs-exclude.xml</findbugs.excludeFilterFile>
     </properties>
@@ -269,7 +267,7 @@
         <connection>scm:git:git://github.com/andretads/logback-s3-rolling-policy.git</connection>
         <developerConnection>scm:git:git@github.com:andretads/logback-s3-rolling-policy.git</developerConnection>
         <url>https://github.com/andretads/logback-s3-rolling-policy</url>
-        <tag>HEAD</tag>
+        <tag>logback-s3-rolling-policy-0.0.1</tag>
     </scm>
 
     <reporting>
