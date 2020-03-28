@@ -4,7 +4,7 @@
 
     <groupId>br.com.damsete</groupId>
     <artifactId>logback-s3-rolling-policy</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -267,7 +267,7 @@
         <connection>scm:git:git://github.com/andretads/logback-s3-rolling-policy.git</connection>
         <developerConnection>scm:git:git@github.com:andretads/logback-s3-rolling-policy.git</developerConnection>
         <url>https://github.com/andretads/logback-s3-rolling-policy</url>
-        <tag>logback-s3-rolling-policy-0.0.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <reporting>
